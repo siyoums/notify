@@ -1,7 +1,7 @@
 const express = require("express");
 const pool = require("./config/dbConfig");
 const PORT = process.env.PORT || 3500;
-
+const authRoutes = require("./routes/authRoutes");
 // inti server
 const app = express();
 
@@ -17,3 +17,4 @@ pool.connect()
     .catch((err) => console.log(err));
 
 // routes
+app.use(authRoutes);
