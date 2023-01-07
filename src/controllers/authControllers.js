@@ -1,23 +1,19 @@
 const jwt = require("jsonwebtoken");
+const { password } = require("pg/lib/defaults");
 const pool = require("../config/dbConfig");
 require("dotenv").config();
 const authSchema = require("../helpers/validation");
 
 // errors
 const handleErrors = (err) => {
-    const errors = { first_name: "", last_name: "", email: "", password: "" };
-
-    console.log(err);
-
-    // if (
-    //     err.message.includes(
-    //         'duplicate key value violates unique constraint "user_key"'
-    //     )
-    // ) {
-    //     errors.email = "Email is already registered";
-    // }
-
-    // return errors;
+    if (
+        err.message.includes(
+            'duplicate key value violates unique constraint "email_unique"'
+        )
+    ) {
+        return "email is already registered";
+    }
+    return err.message.replace(/['"]+/g, "");
 };
 
 // create jwt token
@@ -26,19 +22,22 @@ const createToken = (id) => {
 };
 
 const signupPost = async (req, res) => {
-    // const sql = `
-    // insert into users (first_name, last_name, email, password)
-    // values ('${first_name}', '${last_name}', '${email}', '${password}')
-    // `;
+    const { first_name, last_name, email, password } = req.body;
 
     try {
-        authSchema.validate(req.body, {});
+        const sql = `
+        insert into users (first_name, last_name, email, passkey)
+        values ('${first_name}', '${last_name}', '${email}', '${password}')`;
 
-        // const result = await pool.query(sql);
-        // console.log(result);
+        const valid = authSchema.validate(req.body);
+        if (!valid.error) {
+            const result = await pool.query(sql);
+            res.status(201).json({ msg: "User created successfully" });
+        }
+        throw valid.error;
     } catch (err) {
-        // handleErrors(err);
-        console.log("an error occured");
+        const error = handleErrors(err);
+        res.status(500).json({ errors: { error } });
     }
 };
 
