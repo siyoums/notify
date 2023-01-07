@@ -5,7 +5,7 @@ const authSchema = joi.object({
     last_name: joi.string().min(2).max(30).required(),
     email: joi.string().email().lowercase().required(),
     password: joi.string().min(6).required(),
-    password2: joi.ref("password"),
+    confirmPassword: joi.string().valid(joi.ref("password")).required(),
 });
 
 module.exports = authSchema;

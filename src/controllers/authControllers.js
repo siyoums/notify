@@ -3,15 +3,20 @@ const { password } = require("pg/lib/defaults");
 const pool = require("../config/dbConfig");
 require("dotenv").config();
 const authSchema = require("../helpers/validation");
+const hashPassword = require("../helpers/passwordHasher");
 
 // errors
 const handleErrors = (err) => {
+    if (err.message.includes(`"confirmPassword" must be [ref:password]`)) {
+        return "Passwords do not match";
+    }
+
     if (
         err.message.includes(
             'duplicate key value violates unique constraint "email_unique"'
         )
     ) {
-        return "email is already registered";
+        return "Email is already registered";
     }
     return err.message.replace(/['"]+/g, "");
 };
@@ -22,22 +27,24 @@ const createToken = (id) => {
 };
 
 const signupPost = async (req, res) => {
-    const { first_name, last_name, email, password } = req.body;
+    let { first_name, last_name, email, password } = req.body;
 
     try {
-        const sql = `
-        insert into users (first_name, last_name, email, passkey)
-        values ('${first_name}', '${last_name}', '${email}', '${password}')`;
-
         const valid = authSchema.validate(req.body);
         if (!valid.error) {
+            password = await hashPassword.hash(password);
+            const sql = `
+            insert into users (first_name, last_name, email, passkey)
+            values ('${first_name}', '${last_name}', '${email}', '${password}')`;
             const result = await pool.query(sql);
-            res.status(201).json({ msg: "User created successfully" });
+            res.status(201).json({ msg: "User registered successfully" });
+        } else {
+            throw valid.error;
         }
-        throw valid.error;
     } catch (err) {
         const error = handleErrors(err);
-        res.status(500).json({ errors: { error } });
+        // console.log(err);
+        res.status(400).json({ errors: { error } });
     }
 };
 
