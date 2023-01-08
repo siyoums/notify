@@ -1,25 +1,11 @@
 const jwt = require("jsonwebtoken");
-const { password } = require("pg/lib/defaults");
 const pool = require("../config/dbConfig");
 require("dotenv").config();
-const authSchema = require("../helpers/validation");
 const hashPassword = require("../helpers/passwordHasher");
+const { authSchema } = require("../helpers/validation");
+const { handleErrors } = require("../helpers/validation");
 
 // errors
-const handleErrors = (err) => {
-    if (err.message.includes(`"confirmPassword" must be [ref:password]`)) {
-        return "Passwords do not match";
-    }
-
-    if (
-        err.message.includes(
-            'duplicate key value violates unique constraint "email_unique"'
-        )
-    ) {
-        return "Email is already registered";
-    }
-    return err.message.replace(/['"]+/g, "");
-};
 
 // create jwt token
 const createToken = (id) => {
@@ -37,13 +23,15 @@ const signupPost = async (req, res) => {
             insert into users (first_name, last_name, email, passkey)
             values ('${first_name}', '${last_name}', '${email}', '${password}')`;
             const result = await pool.query(sql);
+            const token = createToken(email);
+            res.cookie("jwt", token);
             res.status(201).json({ msg: "User registered successfully" });
         } else {
             throw valid.error;
         }
     } catch (err) {
         const error = handleErrors(err);
-        // console.log(err);
+        // console.log(error);
         res.status(400).json({ errors: { error } });
     }
 };
