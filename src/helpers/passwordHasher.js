@@ -10,7 +10,7 @@ const hashPassword = {
             console.log(err);
         }
     },
-    compare: async (password) => {
+    compare: async (password, passkey) => {
         return await bcrypt.compare(password, passkey);
     },
 };

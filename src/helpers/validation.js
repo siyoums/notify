@@ -1,12 +1,17 @@
 const joi = require("joi");
 
 // validation
-const authSchema = joi.object({
+const signupAuthSchema = joi.object({
     first_name: joi.string().min(2).max(30).required(),
     last_name: joi.string().min(2).max(30).required(),
     email: joi.string().email().lowercase().required(),
     password: joi.string().min(6).required(),
     confirmPassword: joi.string().valid(joi.ref("password")).required(),
+});
+
+const signinAuthSchema = joi.object({
+    email: joi.string().email().lowercase().required(),
+    password: joi.string().required(),
 });
 
 // validation error handler
@@ -25,4 +30,4 @@ const handleErrors = (err) => {
     return err.message.replace(/['"]+/g, "");
 };
 
-module.exports = { authSchema, handleErrors };
+module.exports = { signinAuthSchema, signupAuthSchema, handleErrors };
