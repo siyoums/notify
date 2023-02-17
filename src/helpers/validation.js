@@ -1,4 +1,4 @@
-const joi = require("joi");
+const joi = require('joi');
 
 // validation
 const signupAuthSchema = joi.object({
@@ -6,7 +6,7 @@ const signupAuthSchema = joi.object({
     last_name: joi.string().min(2).max(30).required(),
     email: joi.string().email().lowercase().required(),
     password: joi.string().min(6).required(),
-    confirmPassword: joi.string().valid(joi.ref("password")).required(),
+    confirmPassword: joi.string().valid(joi.ref('password')).required(),
 });
 
 const signinAuthSchema = joi.object({
@@ -17,7 +17,7 @@ const signinAuthSchema = joi.object({
 // validation error handler
 const handleErrors = (err) => {
     if (err.message.includes(`"confirmPassword" must be [ref:password]`)) {
-        return "Passwords do not match";
+        return 'Passwords do not match';
     }
 
     if (
@@ -25,9 +25,9 @@ const handleErrors = (err) => {
             'duplicate key value violates unique constraint "email_unique"'
         )
     ) {
-        return "Email is already registered";
+        return 'Email is already registered';
     }
-    return err.message.replace(/['"]+/g, "");
+    return err.message.replace(/['"]+/g, '');
 };
 
 module.exports = { signinAuthSchema, signupAuthSchema, handleErrors };
