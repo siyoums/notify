@@ -1,9 +1,9 @@
-const jwt = require("jsonwebtoken");
-const pool = require("../config/dbConfig");
-require("dotenv").config();
-const hashPassword = require("../helpers/passwordHasher");
-const { signupAuthSchema, signinAuthSchema } = require("../helpers/validation");
-const { handleErrors } = require("../helpers/validation");
+const jwt = require('jsonwebtoken');
+const pool = require('../config/dbConfig');
+require('dotenv').config();
+const hashPassword = require('../helpers/passwordHasher');
+const { signupAuthSchema, signinAuthSchema } = require('../helpers/validation');
+const { handleErrors } = require('../helpers/validation');
 
 // create jwt token
 const createToken = (id) => {
@@ -20,11 +20,11 @@ const signupPost = async (req, res) => {
             password = await hashPassword.hash(password);
             const sql = `
             insert into users (first_name, last_name, email, passkey)
-            values ('${first_name}', '${last_name}', '${email}', '${password}')`;
+            values ('${first_name.toup}', '${last_name}', '${email}', '${password}')`;
             const result = await pool.query(sql);
             const token = createToken(email);
-            res.cookie("token", token, { httpOnly: true });
-            res.status(201).json({ msg: "User registered successfully" });
+            res.cookie('token', token, { httpOnly: true });
+            res.status(201).json({ msg: 'User registered successfully' });
         } else {
             throw valid.error;
         }
@@ -39,27 +39,27 @@ const signupPost = async (req, res) => {
 const signinPost = async (req, res) => {
     const { email, password } = req.body;
 
+    const sql = `select *
+                from users
+                where email = '${email}'
+    `;
     try {
-        const sql = `select *
-                    from users
-                    where email = '${email}'
-        `;
         const valid = signinAuthSchema.validate(req.body);
         if (!valid.error) {
-            const resp = await pool.query(
-                `select * from users where email = '${email}'`
-            );
+            const resp = await pool.query(sql);
             if (resp.rowCount === 0) {
-                throw Error("Email is not registered");
+                throw Error('Email is not registered');
             }
             const pass = resp.rows[0].passkey;
             const isCorrect = await hashPassword.compare(password, pass);
 
             if (isCorrect) {
                 const token = createToken(email);
-                res.cookie("token", token, { httpOnly: true });
+                res.cookie('token', token, { httpOnly: true });
                 res.status(200).json({ user: resp.rows[0].first_name });
-            } else throw Error("Incorrect password");
+            } else throw new Error('Incorrect password');
+        } else {
+            throw valid.error;
         }
     } catch (err) {
         const error = handleErrors(err);
