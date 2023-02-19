@@ -22,7 +22,7 @@ const handleErrors = (err) => {
 
     if (
         err.message.includes(
-            'duplicate key value violates unique constraint "email_unique"'
+            'duplicate key value violates unique constraint "pk_user"'
         )
     ) {
         return 'Email is already registered';

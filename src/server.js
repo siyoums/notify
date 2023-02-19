@@ -1,9 +1,10 @@
 const express = require('express');
 const pool = require('./config/dbConfig');
-const PORT = process.env.PORT || 5000;
-const authRoutes = require('./routes/authRoutes');
-const searchTopics = require('./routes/api/search');
+// const PORT = process.env.PORT || 5000;
+const PORT = 5000;
+const routes = require('./routes/api/routes');
 const cookieParser = require('cookie-parser');
+require('dotenv').config();
 
 // inti server
 const app = express();
@@ -30,5 +31,4 @@ pool.connect()
     .catch((err) => console.log(err));
 
 // routes
-app.use(authRoutes);
-app.use(searchTopics);
+app.use(routes);

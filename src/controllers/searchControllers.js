@@ -1,4 +1,5 @@
 const pool = require('../config/dbConfig');
+const { handleErrors } = require('../helpers/validation');
 
 //
 const searchTopics = async (req, res) => {
@@ -8,12 +9,19 @@ const searchTopics = async (req, res) => {
     // limit number of search results per page (pagination)
     const postsPerPage = 3;
 
-    const sql = `select * from users where first_name ilike '%${searchTerm}%' limit ${postsPerPage} offset ${
+    const sql = `select * from Posts where author ilike '%${searchTerm}%' or  caption ilike  '%${searchTerm}%' limit ${postsPerPage} offset ${
         page * postsPerPage
     }  `;
-    // const sql = `select * from users where first_name = 'siyoums' limit 3`;
-    const resp = await pool.query(sql);
-    res.send(resp.rows);
+
+    try {
+        const resp = await pool.query(sql);
+        const s = resp.rowCount;
+
+        res.json(resp.rows);
+        // console.log(resp.rowCount);
+    } catch (err) {
+        const errors = handleErrors(err);
+    }
 };
 
 module.exports = { searchTopics };

@@ -20,7 +20,7 @@ const signupPost = async (req, res) => {
             password = await hashPassword.hash(password);
             const sql = `
             insert into users (first_name, last_name, email, passkey)
-            values ('${first_name}', '${last_name}', '${email}', '${password}')`;
+            values ('${first_name.toup}', '${last_name}', '${email}', '${password}')`;
             const result = await pool.query(sql);
             const token = createToken(email);
             res.cookie('token', token, { httpOnly: true });
