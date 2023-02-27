@@ -15,7 +15,8 @@ const searchTopics = async (req, res) => {
 
     try {
         const resp = await pool.query(sql);
-        const s = resp.rowCount;
+        const rowCount = resp.rowCount;
+        if (!rowCount) res.json({ msg: 'nothing found' });
 
         res.json(resp.rows);
         // console.log(resp.rowCount);
@@ -24,4 +25,13 @@ const searchTopics = async (req, res) => {
     }
 };
 
-module.exports = { searchTopics };
+// what to display on homepage (should be sorted by date/time)
+const home = async (req, res) => {
+    const sql = `select * from posts order by RANDOM() limit 3;`;
+    try {
+        const resp = await pool.query(sql);
+        res.json(resp.rows);
+    } catch (err) {}
+};
+
+module.exports = { searchTopics, home };
